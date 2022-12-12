@@ -102,8 +102,14 @@ public:
     // To be completed
     HASH_INDEX_T next() 
     {
-        
+        if (this->numProbes_ == this->m_){
+            return this->npos;
+        }
 
+        HASH_INDEX_T proby = this->start_ + this->numProbes_;
+        proby %= this->m;
+        this->numProbes_++;
+        return proby;
 
     }
 };
@@ -271,6 +277,10 @@ private:
 
     // ADD MORE DATA MEMBERS HERE, AS NECESSARY
 
+    double alfs;
+    size_t saiz;
+    size_t insertz;
+
 };
 
 // ----------------------------------------------------------------------------
@@ -292,6 +302,13 @@ HashTable<K,V,Prober,Hash,KEqual>::HashTable(
     double resizeAlpha, const Prober& prober, const Hasher& hash, const KEqual& kequal)
        :  hash_(hash), kequal_(kequal), prober_(prober)
 {
+    alfs = resizeAlpha;
+    saiz = 0;
+    insertz = 0;
+
+    mIndex_ = 0;
+    table_ = std::vector<HashItem*>(CAPACITIES[mIndex_], nullptr);
+    totalProbes_ = 0;
     // Initialize any other data members as necessary
 
 }
@@ -301,12 +318,14 @@ template<typename K, typename V, typename Prober, typename Hash, typename KEqual
 HashTable<K,V,Prober,Hash,KEqual>::~HashTable()
 {
 
+
 }
 
 // To be completed
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 bool HashTable<K,V,Prober,Hash,KEqual>::empty() const
 {
+    return !saiz;
 
 }
 
@@ -314,6 +333,7 @@ bool HashTable<K,V,Prober,Hash,KEqual>::empty() const
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 size_t HashTable<K,V,Prober,Hash,KEqual>::size() const
 {
+    return saiz;
 
 }
 
@@ -321,6 +341,22 @@ size_t HashTable<K,V,Prober,Hash,KEqual>::size() const
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
 {
+    if((saiz + insertz) / table_.size() >= alfs){
+        resize();
+        insert(p);
+    }
+    HASH_INDEX_T prewb = this->probe(p.first);
+    if (prewb == npos){
+        throw std::logic_error ();
+    }else if (table_[prewb] != nullptr) {
+        table_[prewb]->item.second = p.second;
+    }else{
+        HashItem* nodel = new HashItem(p);
+        nodel->deleted = false;
+        table_[prewb] = nodel;
+        saiz++;
+        insertz++;
+    }
 
 
 }
@@ -329,6 +365,7 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 void HashTable<K,V,Prober,Hash,KEqual>::remove(const KeyType& key)
 {
+    
 
 
 }
